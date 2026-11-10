@@ -53,7 +53,31 @@ Response:
 GET /api/loan/status/{applicationId}
 
 Returns current status of a loan application.
+### 4. Raise Dispute
+POST /api/dispute/raise?customerId={id}&applicationId={id}&reason={reason}&description={text}
 
+Raises a dispute for a loan application.
+
+Example reasons: WRONGREJECTION, INTERESTRATE, DOCUMENTISSUE
+
+Response:
+{
+  "disputeId": "DISP-1794309459542",
+  "status": "OPEN",
+  "priority": "HIGH",
+  "assignedTo": "Senior Credit Manager",
+  "message": "Dispute raised successfully. You will hear back within 48 hours."
+}
+
+### 5. Dispute Status
+GET /api/dispute/status/{disputeId}
+
+Returns current status of a dispute.
+
+### 6. Resolve Dispute
+PUT /api/dispute/resolve/{disputeId}?resolution={text}&resolvedBy={name}
+
+Resolves an open dispute.
 ## 🏦 Decision Logic
 
 | Credit Score | Loan Amount | Decision |
