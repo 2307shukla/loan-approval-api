@@ -1,6 +1,7 @@
 package com.abhijeet.loan_approval_api.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "loan_applications")
@@ -15,6 +16,12 @@ public class LoanApplication {
     private String purpose;
     private String decision;
     private String reason;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -28,4 +35,6 @@ public class LoanApplication {
     public void setDecision(String decision) { this.decision = decision; }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
