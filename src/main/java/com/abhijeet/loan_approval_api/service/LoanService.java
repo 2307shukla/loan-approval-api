@@ -15,7 +15,6 @@ public class LoanService {
 
     public LoanApplication applyLoan(String customerId, Double loanAmount, String purpose) {
 
-        // Validation
         if (customerId == null || customerId.isEmpty()) {
             throw new IllegalArgumentException("Customer ID cannot be empty");
         }
@@ -44,5 +43,10 @@ public class LoanService {
 
     public List<LoanApplication> getAllLoans() {
         return loanRepository.findAll();
+    }
+
+    public LoanApplication getLoanById(Long id) {
+        return loanRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Loan not found with ID: " + id));
     }
 }
