@@ -2,28 +2,34 @@ package com.abhijeet.loan_approval_api.service;
 
 import com.abhijeet.loan_approval_api.entity.CreditScore;
 import com.abhijeet.loan_approval_api.repository.CreditScoreRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CreditScoreService {
 
+    private static final Logger logger = 
+        LoggerFactory.getLogger(CreditScoreService.class);
+
     @Autowired
     private CreditScoreRepository creditScoreRepository;
 
     public CreditScore getCreditScore(String customerId) {
+        logger.info("Fetching credit score for customerId: {}", customerId);
+
         if (customerId == null || customerId.isEmpty()) {
+            logger.error("Customer ID is empty!");
             throw new IllegalArgumentException("Customer ID cannot be empty");
         }
 
         CreditScore creditScore = new CreditScore();
         creditScore.setCustomerId(customerId);
 
-        // Generate score based on customerId
         int score = Math.abs(customerId.hashCode()) % 900 + 100;
         creditScore.setScore(score);
 
-        // Set rating based on score
         if (score >= 750) {
             creditScore.setRating("EXCELLENT");
         } else if (score >= 600) {
@@ -34,6 +40,8 @@ public class CreditScoreService {
             creditScore.setRating("POOR");
         }
 
+        logger.info("Credit score for customerId: {} is {} - {}", 
+                    customerId, score, creditScore.getRating());
         return creditScoreRepository.save(creditScore);
     }
 }
