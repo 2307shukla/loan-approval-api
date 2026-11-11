@@ -14,6 +14,18 @@ public class LoanService {
     private LoanRepository loanRepository;
 
     public LoanApplication applyLoan(String customerId, Double loanAmount, String purpose) {
+
+        // Validation
+        if (customerId == null || customerId.isEmpty()) {
+            throw new IllegalArgumentException("Customer ID cannot be empty");
+        }
+        if (loanAmount == null || loanAmount <= 0) {
+            throw new IllegalArgumentException("Loan amount must be greater than 0");
+        }
+        if (purpose == null || purpose.isEmpty()) {
+            throw new IllegalArgumentException("Purpose cannot be empty");
+        }
+
         LoanApplication app = new LoanApplication();
         app.setCustomerId(customerId);
         app.setLoanAmount(loanAmount);
