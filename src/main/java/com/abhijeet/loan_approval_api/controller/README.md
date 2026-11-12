@@ -15,8 +15,11 @@ A production-ready REST API built with Spring Boot for managing loan application
 |---|---|
 | Java 21 | Programming Language |
 | Spring Boot 3.4.5 | Framework |
+| Spring Security + JWT | Authentication |
 | Spring Data JPA | Database ORM |
 | H2 Database | In-memory Database |
+| Bucket4j | Rate Limiting |
+| JUnit + Mockito | Unit Testing |
 | Swagger/OpenAPI | API Documentation |
 | Docker | Containerization |
 | Render | Cloud Deployment |
@@ -24,7 +27,21 @@ A production-ready REST API built with Spring Boot for managing loan application
 
 ---
 
+## 🔒 Security Features
+- JWT Authentication — secure token-based login
+- Rate Limiting — max 10 requests per minute per IP
+- Input Validation — request data validated automatically
+- Exception Handling — proper error responses
+
+---
+
 ## 📋 API Endpoints
+
+### 🔐 Auth APIs
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | /api/auth/register | Register new user |
+| POST | /api/auth/login | Login and get JWT token |
 
 ### 🏦 Loan APIs
 | Method | Endpoint | Description |
@@ -79,26 +96,24 @@ A production-ready REST API built with Spring Boot for managing loan application
 
 ---
 
-## 🛠️ Run Locally
+## 🔑 How to Use API
 
-```bash
-# Clone the repo
-git clone https://github.com/Shukla9876/loan-approval-api.git
-
-# Navigate to project
-cd loan-approval-api
-
-# Run the app
-./mvnw spring-boot:run
+### Step 1 — Register:
+```json
+POST /api/auth/register
+{
+  "username": "yourname",
+  "password": "yourpassword"
+}
 ```
 
-## 🌐 Access Locally
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- H2 Console: http://localhost:8080/h2-console
+### Step 2 — Login:
+```json
+POST /api/auth/login
+{
+  "username": "yourname",
+  "password": "yourpassword"
+}
+```
 
----
-
-## 👨‍💻 Developer
-**Abhijeet Shukla**
-- GitHub: https://github.com/Shukla9876
-- LinkedIn: www.linkedin.com/in/abhijeet-shukla-as2807
+### Step 3 — Use token:
