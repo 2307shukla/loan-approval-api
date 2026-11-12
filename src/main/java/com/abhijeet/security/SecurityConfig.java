@@ -24,10 +24,13 @@ public class SecurityConfig {
     private JwtFilter jwtFilter;
 
     @Autowired
+    private RateLimitFilter rateLimitFilter;
+
+    @Autowired
     private UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) 
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
         http
             .csrf(csrf -> csrf.disable())
@@ -44,7 +47,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .addFilterBefore(jwtFilter, 
+            .addFilterBefore(rateLimitFilter,
+                UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtFilter,
                 UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -56,7 +61,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = 
+        DaoAuthenticationProvider provider =
             new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
