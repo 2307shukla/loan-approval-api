@@ -24,7 +24,7 @@ public class JwtUtil {
     private long expiration; // milliseconds, default 24 hours
 
     @PostConstruct
-    void validateSecret() {
+    public void validateSecret() {
         int bytes = secret == null ? 0 : secret.getBytes(StandardCharsets.UTF_8).length;
         if (bytes < MIN_SECRET_BYTES) {
             throw new IllegalStateException(
