@@ -1,6 +1,7 @@
 package com.abhijeet.loan_approval_api.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,21 +30,37 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    // The H2 console is only reachable when explicitly enabled (dev profile).
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
+            // Clickjacking protection stays on (DENY) except for the dev-only H2 console.
+            .headers(headers -> {
+                if (h2ConsoleEnabled) {
+                    headers.frameOptions(frame -> frame.sameOrigin());
+                }
+            })
+            .authorizeHttpRequests(auth -> {
+                auth.requestMatchers(
                     "/api/auth/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**",
-                    "/h2-console/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
+                    "/actuator/health",
+                    "/actuator/health/**",
+                    "/actuator/info",
+                    "/error"
+                ).permitAll();
+                if (h2ConsoleEnabled) {
+                    auth.requestMatchers("/h2-console/**").permitAll();
+                }
+                auth.anyRequest().authenticated();
+            })
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )

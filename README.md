@@ -1,83 +1,65 @@
 # Loan Approval REST API
 
-A Spring Boot REST API that simulates a **Loan Approval System** with credit scoring and decision engine. Built as a backend integration service for Pega BPM Customer Service applications.
+![CI](https://github.com/2307shukla/loan-approval-api/actions/workflows/ci.yml/badge.svg)
 
-## 🚀 Live API
-> https://loan-approval-api-viia.onrender.com
+A Spring Boot REST API that simulates a **loan approval system** with credit scoring, a decision engine, payments and dispute handling. Built as a backend integration service for Pega BPM Customer Service applications.
 
-## 🛠️ Tech Stack
-- Java 21
-- Spring Boot 4.1
-- Maven
-- Docker
-- Render (Cloud Deployment)
+**Live:** https://loan-approval-api-viia.onrender.com (Swagger UI at `/swagger-ui.html`; the free tier sleeps, so the first request can take a minute)
 
-## 📋 API Endpoints
+## Tech stack
+Java 21 · Spring Boot 3.4.5 · Spring Security + JWT · Spring Data JPA · PostgreSQL (H2 for local dev) · Bucket4j rate limiting · springdoc OpenAPI · Actuator · Docker · GitHub Actions
 
-### 1. Credit Score Check
-GET /api/credit/score?customerId={id}
+## Authentication
+Every endpoint except `/api/auth/**`, Swagger and `/actuator/health` needs a bearer token.
 
-Returns credit score and eligibility for a customer.
+1. `POST /api/auth/register` with `{"username": "...", "password": "..."}`
+2. `POST /api/auth/login` with the same body returns `{"token": "..."}`
+3. Send `Authorization: Bearer <token>` on every other call.
 
-Example:
-GET https://loan-approval-api-viia.onrender.com/api/credit/score?customerId=A001
+## Endpoints
+| Area | Endpoints |
+|---|---|
+| Auth | `POST /api/auth/register`, `POST /api/auth/login` |
+| Credit | `GET /api/credit/score` |
+| Customers | `POST /api/customer/create`, `GET /api/customer/{customerId}`, `GET /api/customer/all` |
+| Loans | `POST /api/loan/apply`, `GET /api/loan/all`, `GET /api/loan/{id}` |
+| Payments | `POST /api/payment/make`, `GET /api/payment/customer/{customerId}`, `GET /api/payment/all`, `GET /api/payment/{id}` |
+| Disputes | `POST /api/dispute/raise`, `PUT /api/dispute/resolve/{disputeId}`, `GET /api/dispute/status/{disputeId}`, `GET /api/dispute/all` |
+| Ops | `GET /actuator/health`, `GET /actuator/info` |
 
-Response:
-{
-  "customerId": "A001",
-  "creditScore": 750,
-  "status": "EXCELLENT",
-  "eligible": true
-}
+Full request and response schemas are in Swagger UI.
 
-### 2. Loan Application
-POST /api/loan/apply?customerId={id}&loanAmount={amount}&purpose={purpose}
+## Running locally
+```bash
+export JWT_SECRET="$(openssl rand -base64 48)"
+SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run     # in-memory H2, H2 console enabled
+```
 
-Submits a loan application and returns approval decision.
+## Configuration (environment variables)
+| Variable | Default | Purpose |
+|---|---|---|
+| `JWT_SECRET` | *(required, no default)* | Token signing key, at least 32 bytes. The app refuses to start without it. |
+| `DATABASE_URL` | `jdbc:h2:mem:loandb` | JDBC URL. Use `jdbc:postgresql://host:5432/db` in production. |
+| `DB_USERNAME` / `DB_PASSWORD` | `sa` / empty | Database credentials. |
+| `DB_POOL_SIZE` | `5` | Connection pool size. |
+| `DDL_AUTO` | `update` | Hibernate schema mode. |
+| `JWT_EXPIRATION_MS` | `86400000` | Token lifetime (24 h). |
+| `PORT` | `8080` | HTTP port. |
+| `SPRING_PROFILES_ACTIVE` | *(none)* | `dev` enables the H2 console and SQL logging. Never use in production. |
 
-Example:
-POST https://loan-approval-api-viia.onrender.com/api/loan/apply?customerId=A001&loanAmount=500000&purpose=HomeLoan
+## Production deployment
+- **Persistent database:** the default H2 database is in-memory and loses all data on restart. Set `DATABASE_URL`, `DB_USERNAME` and `DB_PASSWORD` to a PostgreSQL instance (for example Neon or Render Postgres).
+- **Secret:** generate `JWT_SECRET` once and keep it only in the platform's environment settings. Rotating it invalidates all issued tokens.
+- **Health check:** point the platform's health check at `/actuator/health`. It is public and exempt from rate limiting.
+- **Container:** multi-stage image, runs as a non-root user, with a built-in `HEALTHCHECK` and container-aware JVM memory settings (`JAVA_OPTS` to override).
+- **Proxy headers:** `X-Forwarded-*` headers are honoured so rate limiting applies per client IP behind Render's proxy.
+- **CI:** every push runs `mvn verify` and builds the Docker image.
 
-Response:
-{
-  "customerId": "A001",
-  "loanAmount": 500000.0,
-  "purpose": "HomeLoan",
-  "creditScore": 750,
-  "decision": "APPROVED",
-  "reason": "Good credit score and acceptable loan amount",
-  "applicationId": "LOAN-1794287010638"
-}
+## Known limitations
+- Open self-registration: anyone can create a `USER` account. Fine for a demo; add an admin-approval or invite flow before real use.
+- Request bodies for register/login are not validated yet (empty or duplicate usernames).
+- Schema is managed by Hibernate `update`; a migration tool (Flyway) is the next step for real data.
 
-### 3. Loan Status
-GET /api/loan/status/{applicationId}
-
-Returns current status of a loan application.
-### 4. Raise Dispute
-POST /api/dispute/raise?customerId={id}&applicationId={id}&reason={reason}&description={text}
-
-Raises a dispute for a loan application.
-
-Example reasons: WRONGREJECTION, INTERESTRATE, DOCUMENTISSUE
-
-Response:
-{
-  "disputeId": "DISP-1794309459542",
-  "status": "OPEN",
-  "priority": "HIGH",
-  "assignedTo": "Senior Credit Manager",
-  "message": "Dispute raised successfully. You will hear back within 48 hours."
-}
-
-### 5. Dispute Status
-GET /api/dispute/status/{disputeId}
-
-Returns current status of a dispute.
-
-### 6. Resolve Dispute
-PUT /api/dispute/resolve/{disputeId}?resolution={text}&resolvedBy={name}
-
-Resolves an open dispute.
 ## 🏦 Decision Logic
 
 | Credit Score | Loan Amount | Decision |
@@ -94,4 +76,4 @@ This API is designed to integrate with Pega Customer Service as a REST connector
 Abhijeet Shukla
 Pega Certified Senior System Architect (CSSA) | BPM Solutions Architect
 - LinkedIn: linkedin.com/in/abhijeet-shukla-as2807
-- GitHub: github.com/Shukla9876
+- GitHub: github.com/2307shukla
