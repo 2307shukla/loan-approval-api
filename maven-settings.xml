@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Used only for the Docker build (see Dockerfile). Routes all Maven Central
+  lookups through Google's read-only GCS-backed mirror instead of Apache's
+  own repo.maven.apache.org origin, which has been repeatedly 429
+  rate-limiting builds on Render's shared build infrastructure. Google's
+  mirror serves the exact same artifacts, just with far higher available
+  throughput, since it's backed by Cloud Storage/CDN rather than a single
+  origin server.
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0">
+  <mirrors>
+    <mirror>
+      <id>google-maven-central</id>
+      <name>Google Maven Central Mirror</name>
+      <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+</settings>
