@@ -27,8 +27,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    // Upper bound on tracked client IPs so the map cannot grow without limit.
+    private static final int MAX_TRACKED_CLIENTS = 10_000;
+
     private Bucket getBucket(String ip) {
+        if (buckets.size() >= MAX_TRACKED_CLIENTS) {
+            buckets.clear();
+        }
         return buckets.computeIfAbsent(ip, k -> createNewBucket());
+    }
+
+    // Platform health checks poll /actuator/* often; they must never be throttled,
+    // or the platform would mark a healthy instance as down.
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getRequestURI().startsWith("/actuator/");
     }
 
     @Override
