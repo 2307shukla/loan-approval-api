@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+# The jobs only read the code: no write access for the workflow token.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
