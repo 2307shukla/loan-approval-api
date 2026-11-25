@@ -6,6 +6,14 @@ A Spring Boot REST API that simulates a **loan approval system** with credit sco
 
 **Live:** https://loan-approval-api-viia.onrender.com (Swagger UI at `/swagger-ui.html`; the free tier sleeps, so the first request can take a minute)
 
+## At a glance
+
+- Simulates a loan approval flow: customers, credit scoring, loan decisions, payments and disputes.
+- Built as a backend integration service for Pega BPM customer-service applications.
+- Token-based sign-in and rate limiting on the API.
+- Built with Java, Spring Boot and Spring Security, on PostgreSQL (in-memory database for local use).
+- Free to run: deployed on a free hosting tier.
+
 ## Tech stack
 Java 21 · Spring Boot 3.4.5 · Spring Security + JWT · Spring Data JPA · PostgreSQL (H2 for local dev) · Bucket4j rate limiting · springdoc OpenAPI · Actuator · Docker · GitHub Actions
 
