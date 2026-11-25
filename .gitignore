@@ -33,3 +33,10 @@ build/
 .vscode/
 
 .env
+
+# Secrets and keys: never commit them
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
